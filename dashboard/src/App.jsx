@@ -26,18 +26,8 @@ const DEMO_POSITIONS = [
   },
 ]
 
-const DEMO_LOGS = [
-  { time: '16:50:02', level: 'info',    msg: '📡 Scan completo: 2 oportunidade(s) em 7 pares analisados.' },
-  { time: '16:50:01', level: 'trade',   msg: '🎯 Sinal encontrado: LONG BTCUSDT (4.5 conf.) — RSI=32 EMA_cross ADX=31 vol=1.8x' },
-  { time: '16:45:00', level: 'info',    msg: '📊 Status | Posições: 3/5 | PnL dia: +150.01 USDT | Trades: 5 | Saldo: 1148.50 USDT' },
-  { time: '16:40:12', level: 'trade',   msg: '✅ FECHADO BNBUSDT | PnL: +42.30 USDT' },
-  { time: '16:35:00', level: 'info',    msg: '📡 Scan completo: 1 oportunidade(s) em 7 pares analisados.' },
-  { time: '16:30:45', level: 'warning', msg: '⚠️ Volume abaixo de 1.5x média para ADAUSDT — sinal descartado.' },
-  { time: '16:25:00', level: 'trade',   msg: '📈 ABERTO LONG ETHUSDT | Qty: 0.82 | Entry: 3456.20 | SL: 3390.00 | TP: 3588.60' },
-  { time: '16:20:03', level: 'info',    msg: '📡 Scan completo: 3 oportunidade(s) em 7 pares analisados.' },
-  { time: '16:15:22', level: 'trade',   msg: '❌ FECHADO XRPUSDT | PnL: -8.42 USDT' },
-  { time: '16:10:00', level: 'info',    msg: '📅 Novo dia: 2026-03-11' },
-  { time: '16:05:00', level: 'info',    msg: '🚀 Bot iniciado | Modo: TESTNET | Capital: $1000.00' },
+const INITIAL_LOGS = [
+  { time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), level: 'info', msg: 'Aguardando inicialização do painel...' }
 ]
 
 const DEMO_PAIRS = [
@@ -75,6 +65,7 @@ function App() {
   const [botLoading, setBotLoading] = useState(false)
   const [apiConnected, setApiConnected] = useState(false)
   const [botStatus, setBotStatus] = useState(null)
+  const [logs, setLogs] = useState(INITIAL_LOGS)
   const statusInterval = useRef(null)
 
   // Update clock every second
@@ -91,15 +82,21 @@ function App() {
         const data = await res.json()
         setBotOnline(data.rodando)
         setBotStatus(data)
+        if (!apiConnected) {
+          setLogs(prev => [{ time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), level: 'info', msg: '✅ Conexão estabelecida com a API!' }, ...prev])
+        }
         setApiConnected(true)
       } else {
         setApiConnected(false)
       }
     } catch {
+      if (apiConnected) {
+        setLogs(prev => [{ time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), level: 'warning', msg: '⚠️ Conexão perdida com a API!' }, ...prev])
+      }
       setApiConnected(false)
       setBotOnline(false)
     }
-  }, [])
+  }, [apiConnected])
 
   useEffect(() => {
     fetchStatus()
@@ -116,6 +113,7 @@ function App() {
       const res = await fetch(`${API_URL}${endpoint}`, { method: 'POST' })
       if (res.ok) {
         // Wait a bit then refresh status
+        setLogs(prev => [{ time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), level: 'info', msg: botOnline ? '⏹️ Bot desativado manualmente.' : '🚀 Ordem de inicio enviada ao Bot!' }, ...prev])
         setTimeout(async () => {
           await fetchStatus()
           setBotLoading(false)
@@ -270,14 +268,14 @@ function App() {
         <div className="card animate-in animate-in-delay-3">
           <div className="card-header">
             <span className="card-title">📋 Log em Tempo Real</span>
-            <button className="btn btn-outline" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>
+            <button className="btn btn-outline" style={{ padding: '4px 12px', fontSize: '0.75rem' }} onClick={() => setLogs([])}>
               Limpar
             </button>
           </div>
           <div className="card-body">
             <div className="log-feed">
-              {DEMO_LOGS.map((log, i) => (
-                <div key={i} className="log-entry" style={{ animation: `slideIn 0.3s ease ${i * 0.05}s both` }}>
+              {logs.map((log, i) => (
+                <div key={i} className="log-entry" style={{ animation: `slideIn 0.3s ease 0s both` }}>
                   <span className="log-time">{log.time}</span>
                   <span className={`log-level ${log.level}`}>
                     {log.level.toUpperCase()}
