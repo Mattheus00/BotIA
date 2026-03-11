@@ -91,6 +91,7 @@ def get_status():
 def start_bot():
     """Inicia o bot."""
     import threading
+    global _bot_thread
 
     if _bot_instance is None:
         return jsonify({"success": False, "message": "Bot não inicializado"}), 500
@@ -102,7 +103,6 @@ def start_bot():
 
     bot.rodando = True
 
-    global _bot_thread
     _bot_thread = threading.Thread(target=bot.run, daemon=True, name="trading-bot")
     _bot_thread.start()
 
