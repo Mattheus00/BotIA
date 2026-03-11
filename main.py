@@ -13,18 +13,19 @@ Certifique-se de:
   3. Instalar dependências: pip install -r requirements.txt
 """
 
+import os
 import sys
 
 
 def main():
+    port = int(os.environ.get("PORT", 5000))
     print(
         "\n"
         "╔══════════════════════════════════════════════════╗\n"
         "║         🤖 TRADING BOT — BINANCE                ║\n"
         "║         Gestão de risco automatizada             ║\n"
         "║                                                  ║\n"
-        "║   API:       http://localhost:5000                ║\n"
-        "║   Dashboard: http://localhost:5173                ║\n"
+       f"║   API:       http://0.0.0.0:{port:<20s}  ║\n"
         "╚══════════════════════════════════════════════════╝\n"
     )
 
@@ -40,10 +41,10 @@ def main():
         set_bot(bot)
 
         print("✅ Bot pronto. Aguardando comando de START via dashboard...")
-        print("   → Acesse http://localhost:5173 e clique em 'Ativar Bot'\n")
+        print(f"   → Acesse o dashboard no navegador\n")
 
         # Iniciar servidor API (bloqueia aqui)
-        run_api(host="0.0.0.0", port=5000)
+        run_api(host="0.0.0.0", port=port)
 
     except ValueError as e:
         # Erros de configuração (config.py validations)

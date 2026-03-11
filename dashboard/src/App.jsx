@@ -53,7 +53,9 @@ const DEMO_PAIRS = [
   { symbol: 'ARBUSDT', change: '-2.10', vol: '280M' },
 ]
 
-const API_URL = 'http://localhost:5000'
+// Em produção, API e dashboard estão no mesmo servidor (URL relativa)
+// Em dev (Vite), usa localhost:5000
+const API_URL = import.meta.env.DEV ? 'http://localhost:5000' : ''
 
 // ── Power Icon SVG ───────────────────────────────────────────────────
 function PowerIcon() {

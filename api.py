@@ -5,14 +5,19 @@ Endpoints:
   GET  /api/status  → Estado atual do bot (online, posições, PnL, etc.)
   POST /api/start   → Inicia o bot em thread separada
   POST /api/stop    → Para o bot graciosamente
+  GET  /*           → Serve o dashboard React (produção)
 """
 
-from flask import Flask, jsonify
+import os
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from datetime import datetime, timezone
 
-app = Flask(__name__)
-CORS(app)  # Permite chamadas do dashboard (localhost:5173 → localhost:5000)
+# Caminho do dashboard buildado
+DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard", "dist")
+
+app = Flask(__name__, static_folder=DASHBOARD_DIR, static_url_path="")
+CORS(app)
 
 # Referência global ao bot — será definida pelo main.py
 _bot_instance = None
@@ -118,7 +123,22 @@ def stop_bot():
     bot.rodando = False
     return jsonify({"success": True, "message": "Bot parado com sucesso"})
 
+# ── Dashboard (SPA catch-all) ─────────────────────────────────────────────
 
-def run_api(host="0.0.0.0", port=5000):
-    """Inicia o servidor Flask."""
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_dashboard(path):
+    """Serve o dashboard React buildado. Fallback para index.html (SPA)."""
+    if path and os.path.exists(os.path.join(DASHBOARD_DIR, path)):
+        return send_from_directory(DASHBOARD_DIR, path)
+    index = os.path.join(DASHBOARD_DIR, "index.html")
+    if os.path.exists(index):
+        return send_from_directory(DASHBOARD_DIR, "index.html")
+    return jsonify({"message": "Dashboard not built. Run: cd dashboard && npm run build"}), 404
+
+
+def run_api(host="0.0.0.0", port=None):
+    """Inicia o servidor Flask. Usa PORT env var (Railway) ou default 5000."""
+    if port is None:
+        port = int(os.environ.get("PORT", 5000))
     app.run(host=host, port=port, debug=False, use_reloader=False)
