@@ -132,13 +132,18 @@ function App() {
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }, [])
 
-  // Derived stats
-  const totalPnl = DEMO_POSITIONS.reduce((sum, p) => sum + p.pnl, 0)
-  const totalTrades = 5
-  const wins = 3
-  const winRate = ((wins / totalTrades) * 100).toFixed(1)
-  const saldo = 1000 + totalPnl
-  const drawdownUsed = ((Math.abs(totalPnl < 0 ? totalPnl : 0) / 1000) * 100).toFixed(1)
+  // Derived stats (Dados reais da API)
+  const isTestnetAPI = botStatus ? botStatus.modo.includes("TESTNET") : isTestnet
+  const modoAPI = botStatus ? botStatus.modo : "DESCONECTADO"
+  
+  const posicoes = botStatus?.posicoes || []
+  const totalPnl = botStatus?.pnl_dia || 0
+  const totalTrades = botStatus?.trades_dia || 0
+  const wins = botStatus?.wins_dia || 0
+  const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : "0.0"
+  
+  const saldo = botStatus?.saldo || 0
+  const drawdownUsed = saldo > 0 ? ((Math.abs(totalPnl < 0 ? totalPnl : 0) / saldo) * 100).toFixed(2) : "0.00"
 
   return (
     <div className="app-container">
@@ -154,9 +159,9 @@ function App() {
           </div>
         </div>
         <div className="header-right">
-          <span className={`badge ${isTestnet ? 'badge-testnet' : 'badge-live'}`}>
-            <span className={`pulse-dot ${isTestnet ? 'pulse-dot-amber' : 'pulse-dot-red'}`}></span>
-            {isTestnet ? 'Testnet' : 'Produção'}
+          <span className={`badge ${isTestnetAPI ? 'badge-testnet' : 'badge-live'}`}>
+            <span className={`pulse-dot ${isTestnetAPI ? 'pulse-dot-amber' : 'pulse-dot-red'}`}></span>
+            {modoAPI}
           </span>
           <span className={`badge ${apiConnected ? (botOnline ? 'badge-online' : 'badge-offline') : 'badge-offline'}`}>
             <span className={`pulse-dot ${botOnline ? 'pulse-dot-green' : ''}`}></span>
@@ -205,14 +210,14 @@ function App() {
 
         <div className="stat-card accent-amber animate-in animate-in-delay-4">
           <div className="stat-label">Posições Abertas</div>
-          <div className="stat-value neutral">{DEMO_POSITIONS.length}/5</div>
+          <div className="stat-value neutral">{posicoes.length}/5</div>
           <div className="stat-detail">Drawdown usado: {drawdownUsed}%</div>
         </div>
 
         <div className="stat-card accent-rose animate-in animate-in-delay-5">
           <div className="stat-label">Risco por Trade</div>
           <div className="stat-value neutral">1.0%</div>
-          <div className="stat-detail">$10.00 USDT por operação</div>
+          <div className="stat-detail">1% do saldo atual</div>
         </div>
       </div>
 
@@ -223,13 +228,15 @@ function App() {
           <div className="card-header">
             <span className="card-title">📊 Posições Abertas</span>
             <span className="badge badge-online" style={{ fontSize: '0.7rem', padding: '3px 8px' }}>
-              {DEMO_POSITIONS.length} ativas
+              {posicoes.length} ativas
             </span>
           </div>
           <div className="card-body">
-            {DEMO_POSITIONS.length > 0 ? (
+            {posicoes.length > 0 ? (
               <ul className="positions-list">
-                {DEMO_POSITIONS.map((pos, i) => (
+                {posicoes.map((pos, i) => {
+                  const pnlNum = pos.pnl || 0;
+                  return (
                   <li key={i} className="position-item" style={{ animation: `slideIn 0.3s ease ${i * 0.1}s both` }}>
                     <span className={`position-dir ${pos.direcao.toLowerCase()}`}>
                       {pos.direcao}
@@ -239,16 +246,16 @@ function App() {
                       <span>{pos.confirmacoes} conf.</span>
                     </div>
                     <span className="position-price">
-                      Entry: ${pos.entry.toLocaleString()}
+                      Entry: ${parseFloat(pos.entry).toLocaleString()}
                     </span>
-                    <span className={`position-pnl ${pos.pnl >= 0 ? 'positive' : 'negative'}`}>
-                      {pos.pnl >= 0 ? '+' : ''}{pos.pnl.toFixed(2)}
+                    <span className={`position-pnl ${pnlNum >= 0 ? 'positive' : 'negative'}`}>
+                      {pnlNum >= 0 ? '+' : ''}{pnlNum.toFixed(2)}
                     </span>
                     <span className="position-conf">
                       SL: {pos.sl} | TP: {pos.tp}
                     </span>
                   </li>
-                ))}
+                )})}
               </ul>
             ) : (
               <div className="empty-state">
