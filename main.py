@@ -25,7 +25,7 @@ def main():
         "║         🤖 TRADING BOT — BINANCE                ║\n"
         "║         Gestão de risco automatizada             ║\n"
         "║                                                  ║\n"
-       f"║   API:       http://0.0.0.0:{port:<20s}  ║\n"
+       f"║   API:       http://0.0.0.0:{str(port):<20s}  ║\n"
         "╚══════════════════════════════════════════════════╝\n"
     )
 
