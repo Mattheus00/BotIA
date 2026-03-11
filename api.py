@@ -54,8 +54,9 @@ def get_status():
     saldo = 0.0
     try:
         saldo = bot.risk.get_saldo_usdt()
-    except Exception:
-        pass
+    except Exception as e:
+        if not bot._client_error:
+            bot._client_error = f"Erro ao buscar saldo: {str(e)}"
 
     from config import TESTNET
 
