@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+logs/
+.venv/
+venv/
+node_modules/
+dist/
+.DS_Store
+backtest_result.json
+backtest_output.txt
+*.log
+.idea/
+.vscode/
