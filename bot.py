@@ -39,13 +39,27 @@ class TradingBot:
 
     def __init__(self):
         # ── Conexão com a Binance ─────────────────────────────────────────
-        self.client = Client(API_KEY, API_SECRET, testnet=TESTNET)
+        try:
+            self.client = Client(API_KEY, API_SECRET, testnet=TESTNET)
+            self._client_error = None
+        except Exception as e:
+            self.client = None
+            self._client_error = e
+            self.logger = Logger()
+            self.logger.error(f"🛑 Erro ao conectar na Binance: {e}")
+            self.logger.error("   Se você está no Railway, seu servidor pode estar nos EUA (IP bloqueado).")
+            self.logger.error("   Para corrigir: Mude a região do seu serviço Railway para Europa (EU).")
 
         # ── Módulos ───────────────────────────────────────────────────────
-        self.risk   = RiskManager(self.client)
-        self.orders = OrderManager(self.client)
-        self.scanner = Scanner(self.client)
-        self.logger = Logger()
+        if self.client:
+            self.risk   = RiskManager(self.client)
+            self.orders = OrderManager(self.client)
+            self.scanner = Scanner(self.client)
+            self.logger = Logger()
+        else:
+            self.risk = None
+            self.orders = None
+            self.scanner = None
 
         # ── Estado interno ────────────────────────────────────────────────
         self.posicoes_abertas: list[dict] = []
@@ -65,6 +79,13 @@ class TradingBot:
         if not CREDENCIAIS_OK:
             self.logger.error("🛑 Chaves da API da Binance não configuradas no ambiente!")
             self.logger.error("   O dashboard está online, mas o bot ficará em repouso absoluto.\n")
+            while self.rodando:
+                time.sleep(10)
+            return
+
+        if self.client is None:
+            self.logger.error(f"🛑 Erro ao conectar na Binance: {self._client_error}")
+            self.logger.error("   O dashboard está online, mas o bot NÃO OPERARÁ (Falha na Binance).")
             while self.rodando:
                 time.sleep(10)
             return
