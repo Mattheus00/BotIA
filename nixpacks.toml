@@ -1,7 +1,9 @@
 # Nixpacks config — Railway precisa de Python + Node.js
 
+providers = ["python", "node"]
+
 [phases.setup]
-nixPkgs = ["nodejs-18_x", "npm"]
+nixPkgs = ["python3", "nodejs_18", "npm"]
 
 [phases.install]
 cmds = ["pip install -r requirements.txt", "cd dashboard && npm install"]
