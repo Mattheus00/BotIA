@@ -49,16 +49,24 @@ MAX_PCT_SALDO_POR_POSICAO = 0.20       # Nunca mais de 20% do saldo numa posiç�
 MAX_ALAVANCAGEM = 3                     # Teto absoluto de alavancagem
 
 # ── VALIDAÇÕES NA INICIALIZAÇÃO ───────────────────────────────────────────────
+import logging as _logging
+
+CREDENCIAIS_OK = True
+
 if not API_KEY or API_KEY == "sua_api_key_aqui":
-    raise ValueError(
+    _logging.warning(
         "⚠️  BINANCE_API_KEY não configurada! "
-        "Edite o arquivo .env com suas credenciais."
+        "O dashboard funcionará, mas o bot não pode operar."
     )
+    CREDENCIAIS_OK = False
+
 if not API_SECRET or API_SECRET == "sua_api_secret_aqui":
-    raise ValueError(
+    _logging.warning(
         "⚠️  BINANCE_API_SECRET não configurada! "
-        "Edite o arquivo .env com suas credenciais."
+        "O dashboard funcionará, mas o bot não pode operar."
     )
+    CREDENCIAIS_OK = False
+
 if ALAVANCAGEM > MAX_ALAVANCAGEM:
     raise ValueError(
         f"⚠️  Alavancagem {ALAVANCAGEM}x excede o máximo permitido ({MAX_ALAVANCAGEM}x)."

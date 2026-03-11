@@ -60,6 +60,14 @@ class TradingBot:
 
     def run(self):
         """Loop principal do bot — roda 24/7 com tratamento de erros."""
+        from config import CREDENCIAIS_OK
+        
+        if not CREDENCIAIS_OK:
+            self.logger.error("🛑 Chaves da API da Binance não configuradas no ambiente!")
+            self.logger.error("   O dashboard está online, mas o bot ficará em repouso absoluto.\n")
+            while self.rodando:
+                time.sleep(10)
+            return
         modo = "TESTNET" if TESTNET else "⚠️  PRODUÇÃO"
         self.logger.info(f"🚀 Bot iniciado | Modo: {modo} | Capital: ${CAPITAL}")
         self.logger.info(
