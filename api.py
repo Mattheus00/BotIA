@@ -63,6 +63,7 @@ def get_status():
         "online": bot.rodando,
         "rodando": bot.rodando,
         "modo": "TESTNET" if TESTNET else "PRODUÇÃO",
+        "client_error": str(bot._client_error) if bot._client_error else None,
         "posicoes_abertas": len(bot.posicoes_abertas),
         "posicoes": [
             {

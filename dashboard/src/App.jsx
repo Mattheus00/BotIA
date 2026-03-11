@@ -142,6 +142,8 @@ function App() {
   
   const saldo = botStatus?.saldo || 0
   const drawdownUsed = saldo > 0 ? ((Math.abs(totalPnl < 0 ? totalPnl : 0) / saldo) * 100).toFixed(2) : "0.00"
+  
+  const clientError = botStatus?.client_error || null;
 
   return (
     <div className="app-container">
@@ -181,6 +183,22 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* ── Error Banner ─────────────────────────────────────────── */}
+      {clientError && (
+        <div className="card animate-in" style={{ borderColor: 'var(--rose-500)', backgroundColor: 'rgba(244, 63, 94, 0.05)', marginBottom: '1.5rem' }}>
+          <div className="card-body" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ fontSize: '2rem' }}>🛑</div>
+            <div>
+              <h3 style={{ color: 'var(--rose-400)', margin: '0 0 0.5rem 0' }}>Erro Crítico de Conexão na Binance</h3>
+              <p style={{ color: 'var(--neutral-300)', margin: 0, fontSize: '0.9rem' }}>
+                O bot não conseguiu conectar à conta para buscar o saldo. <br/>
+                <strong style={{ color: 'var(--rose-300)' }}>Detalhes do Erro:</strong> <code>{clientError}</code>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Stats Grid ─────────────────────────────────────────── */}
       <div className="stats-grid">
